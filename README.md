@@ -2,6 +2,7 @@
 
 FaceCluster is a lightweight, session-based photo album system that detects faces, extracts embeddings, clusters people, and exports per-person albums with representative thumbnails. A Flask web UI is included for session management, uploads, labeling/merging clusters, browsing albums, and downloading ZIP packages.
 
+![](9d2290ed4ec1da9f4634d78dcad9128d.png)
 ## What it does
 
 **Pipeline**
