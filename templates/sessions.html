@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8"/>
+    <title>选择会话</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        body {
+            font-family: system-ui, Arial;
+            margin: 1.2rem;
+        }
+
+        .head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem
+        }
+
+        a.btn {
+            padding: .5rem .9rem;
+            border-radius: 8px;
+            background: #222;
+            color: #fff;
+            text-decoration: none
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        th, td {
+            border-bottom: 1px solid #eee;
+            padding: .6rem;
+            text-align: left
+        }
+
+        .actions a {
+            margin-right: .5rem
+        }
+    </style>
+</head>
+<body>
+<div class="head">
+    <h2>可用会话</h2>
+    <a class="btn" href="/new">＋ 新建会话（上传图片）</a>
+</div>
+<table>
+    <thead>
+    <tr>
+        <th>相册名称</th>
+        <th>创建时间</th>
+        <th>相册数量</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if sessions|length == 0 %}
+    <tr>
+        <td colspan="4" style="opacity:.65">暂无会话，请先新建。</td>
+    </tr>
+    {% endif %}
+    {% for s in sessions %}
+    <tr>
+        <td>
+            <form action="/session/{{ s.sid }}/rename" method="post" style="display:flex;gap:6px;align-items:center">
+                <input type="text" name="title" value="{{ s.title }}"/>
+                <button>保存名称</button>
+            </form>
+        </td>
+        <td>{{ s.created }}</td>
+        <td>{{ s.album_count }}</td>
+        <td class="actions">
+            <a href="/label/{{ s.sid }}">标注命名</a>
+            <a href="/browse/{{ s.sid }}">浏览相册</a>
+            <a href="/add/{{ s.sid }}">追加照片</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

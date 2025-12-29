@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8"/>
+    <title>为每个簇命名</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+        body {
+            font-family: system-ui, Arial;
+            margin: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 12px
+        }
+
+        .thumbs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: .5rem 0
+        }
+
+        .thumbs img {
+            width: 78px;
+            height: 78px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #eee
+        }
+
+        .title {
+            font-weight: 700;
+            margin-bottom: .3rem
+        }
+
+        input[type=text] {
+            width: 100%;
+            padding: .5rem;
+            border: 1px solid #bbb;
+            border-radius: 8px
+        }
+
+        .actions {
+            position: sticky;
+            bottom: 10px;
+            background: #fff;
+            padding: .8rem 0
+        }
+
+        button {
+            padding: .6rem 1rem;
+            border: 0;
+            border-radius: 8px;
+            background: #222;
+            color: #fff;
+            cursor: pointer
+        }
+
+        .muted {
+            opacity: .6
+        }
+    </style>
+</head>
+<body>
+<h2>为每个簇命名</h2>
+<form method="post" action="/apply_names/{{ sid }}">
+    <div class="grid">
+        {% for c in clusters %}
+        <h2>给 {{ title or sid }} 的相册分组命名</h2>
+
+        {% if clusters|length == 0 %}
+        <div style="padding:.8rem;border:1px solid #eee;border-radius:8px;margin:.8rem 0">
+            该会话暂未生成聚类结果，或上次处理中断。
+            <form action="/rebuild/{{ sid }}" method="post" style="margin-top:.6rem">
+                <button type="submit"
+                        style="padding:.4rem .8rem;border:0;border-radius:6px;background:#222;color:#fff;cursor:pointer">
+                    重新构建聚类
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="title">簇 ID：{{ c.cluster_id }}{% if c.cluster_id == -1 %} <span
+                    class="muted">(噪声/未分组)</span>{% endif %}
+            </div>
+            <div class="thumbs">
+                {% if c.thumb_files|length == 0 %}
+                <div class="muted">无缩略图</div>
+                {% else %}
+                {% for t in c.thumb_files %}
+                <img src="/thumbs/{{ sid }}/{{ t }}" loading="lazy"/>
+                {% endfor %}
+                {% endif %}
+            </div>
+            {% if c.cluster_id != -1 %}
+            <input type="text" name="name_{{ c.cluster_id }}" placeholder="给这个簇起个名字，如：张三"/>
+            {% else %}
+            <div class="muted">噪声簇不重命名</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="actions">
+        <button type="submit">应用命名并重命名文件夹</button>
+    </div>
+</form>
+</body>
+</html>

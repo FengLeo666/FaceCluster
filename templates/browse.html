@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8" />
+  <title>浏览相册</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body{font-family:system-ui,Arial;margin:1rem;}
+    .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+    .card{border:1px solid #eee;border-radius:12px;padding:10px;text-align:center}
+    .card img{width:100%;height:160px;object-fit:cover;border-radius:8px;border:1px solid #eee}
+    a.btn{display:inline-block;margin-top:.5rem;padding:.4rem .8rem;border-radius:8px;background:#222;color:#fff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="head">
+    <h2>{{ title or sid }} 的相册</h2>
+    <div><a href="/">返回会话列表</a> · <a href="/label/{{ sid }}">去命名</a></div>
+  </div>
+  <div class="grid">
+    {% for a in albums %}
+      <div class="card">
+        {% if a.thumb %}
+          <img src="{{ a.thumb }}" loading="lazy"/>
+        {% else %}
+          <div style="height:160px;display:flex;align-items:center;justify-content:center;opacity:.6">无图片</div>
+        {% endif %}
+        <div style="margin-top:.4rem">{{ a.name }}</div>
+        <a class="btn" href="/album/{{ sid }}/{{ a.name }}">进入</a>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
