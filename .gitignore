@@ -8,7 +8,7 @@ __pycache__/
 *.pyd
 
 # Ignore model weight
-models/*.onnx
+models/*
 
 # Ignore virtual environments
 .venv/
