@@ -1,50 +1,151 @@
-📸 Intelligent Photo Album System
+# FaceCluster — Intelligent Photo Album System (YuNet + SFace + DBSCAN)
 
-This project implements an intelligent photo album system based on face detection, alignment, and clustering.
-It automatically organizes large collections of photos into albums of individuals, allowing efficient browsing, management, and sharing.
+FaceCluster is a lightweight, session-based photo album system that detects faces, extracts embeddings, clusters people, and exports per-person albums with representative thumbnails. A Flask web UI is included for session management, uploads, labeling/merging clusters, browsing albums, and downloading ZIP packages.
 
-✨ Key Features
+## What it does
 
-Front-end (Web & PWA)
+**Pipeline**
+1. Upload photos (single images or a ZIP archive)
+2. Preprocess / normalize inputs
+3. Face detection & alignment (**OpenCV YuNet**)
+4. Face embedding extraction (**OpenCV SFace**)
+5. Clustering (**DBSCAN**)
+6. Export albums + thumbnails
+7. Optionally rename/merge clusters from the UI
 
-Session list management (create, rename, merge, append).
+**Key features**
+- Session-based workspace per run (`workspace/<session_id>/...`)
+- Batch uploads (multi-file) and ZIP extraction
+- Cluster labeling and merge-by-name (same label merges to one album folder)
+- Album grid browsing and ZIP download
 
-Batch uploads (multiple files or ZIP).
+---
 
-Interactive clustering result naming and merging.
+## Requirements
 
-Album browsing with grid view, filters, and statistics.
+- Python 3.10+ recommended
+- OpenCV **contrib** build is required (for `FaceDetectorYN_create` / `FaceRecognizerSF`)
 
-PWA support: responsive layout, offline fallback, touch-optimized.
+---
 
-Back-end Services
+## Quick start
 
-Session management with state transitions (pending, processing, completed, failed).
+### 1) Create and activate a virtual environment (recommended)
 
-Image pipeline: preprocessing → face detection & alignment → feature extraction.
+```bash
+python -m venv .venv
 
-Clustering & album construction with representative thumbnails.
+# macOS / Linux
+source .venv/bin/activate
 
-Conflict resolution with majority voting and last-write-wins policy.
+# Windows PowerShell
+# .\.venv\Scripts\Activate.ps1
+```
 
-On-demand ZIP packaging and temporary share links.
+### 2) Install dependencies
 
-Storage & Metadata
+You can start with:
 
-Organized session-based directory structure (raw, albums, thumbnails).
+```bash
+pip install -U pip
+pip install -r requirements.txt
+```
 
-Atomic metadata updates (session.json) with fault tolerance.
+### 3) Download Model files (ONNX)
 
-Optional feature vector caching for incremental processing.
+```bash
+mkdir -p models
 
-Collaboration
+curl -L -o models/face_detection_yunet_2023mar.onnx \
+  https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx
 
-Roles: session owner & collaborators (editable).
+curl -L -o models/face_recognition_sface_2021dec.onnx \
+  https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx
+```
 
-Human-readable conflict handling during album naming/merging.
+---
 
-Real-time updates across clients.
+## Running the web app
 
-🚀 Typical Workflow
+From the `FaceCluster/` directory (same level as `Main.py`):
 
-Upload → Preprocessing → Face detection & feature extraction → Clustering → Album construction & thumbnails → Distribution & sync → Front-end confirmation & renaming.
+```bash
+python Main.py
+```
+
+The server starts on:
+
+- `http://127.0.0.1:5000/` (local)
+- binds to `0.0.0.0:5000` by default (LAN-accessible)
+
+> Note: `debug=True` and `use_reloader=False` are configured in `Main.py`.
+
+---
+
+## Typical usage (Web UI)
+
+1. Open the home page (session list)
+2. Create a new session
+3. Upload images (multiple files) or upload a ZIP archive
+4. Start processing/clustering from the UI
+5. Review clusters (thumbnails)
+6. Apply labels (renaming) and merge clusters by assigning the same label
+7. Browse albums and download a ZIP for any album
+
+---
+
+## Output behavior and notes
+
+- Albums are exported under `workspace/<sid>/output/albums/`
+- Thumbnails are exported under `workspace/<sid>/output/thumbnails/`
+- The pipeline includes a project-specific behavior documented in `Service/cluster_service.py`:
+  - Images with **no detected faces** may be copied into all “person” subsets (so context photos remain accessible from each album).
+
+---
+
+## Relevant routes (for developers)
+
+Implemented in `Controller/web.py`:
+
+- `GET /` — list sessions
+- `GET /new` — create a session
+- `GET /add/<sid>` — upload page for a session
+- `POST /upload` — handle upload (images/ZIP)
+- `GET /label/<sid>` — show clusters for labeling/merging
+- `POST /apply_names/<sid>` — apply labels and merge-by-name
+- `GET /browse/<sid>` — browse albums
+- `GET /album/<sid>/<album>` — view one album
+- `GET /download/<sid>/<album>` — download one album as ZIP
+- `POST /rebuild/<sid>` — rebuild outputs for the session
+
+---
+
+## Troubleshooting
+
+### `AttributeError: module 'cv2' has no attribute 'FaceDetectorYN_create'`
+You installed a non-contrib OpenCV package. Fix:
+
+```bash
+pip uninstall -y opencv-python opencv-python-headless
+pip install opencv-contrib-python-headless==4.8.1.78
+```
+
+### Model not found
+Ensure the following files exist relative to the working directory:
+
+```text
+models/face_detection_yunet_2023mar.onnx
+models/face_recognition_sface_2021dec.onnx
+```
+
+### Slow processing on large photo sets
+Face detection + embedding extraction are the dominant costs. Consider:
+- downscaling inputs before processing
+- running on a machine with more CPU cores
+- moving the pipeline to a background worker (Celery/RQ) if you need non-blocking UI
+
+---
+
+## License
+
+No license file is included. If you intend to distribute this project, add a license that matches your requirements and ensure the model distribution terms are acceptable for your use case.

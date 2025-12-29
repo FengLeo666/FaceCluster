@@ -1,0 +1,17 @@
+# Web framework
+Flask==2.2.2
+Werkzeug==2.2.2
+
+# Core numerical stack (NumPy 2.x breaks many older libs)
+numpy==1.26.4
+
+# Computer vision (must be contrib build for YuNet / SFace)
+opencv-contrib-python-headless==4.8.1.78
+
+# Image I/O
+Pillow==11.3.0
+
+# Data & clustering
+pandas==2.2.2
+scikit-learn==1.4.2
+hdbscan==0.8.40
